@@ -1,6 +1,14 @@
+
+# Copyright 2022 Mikhail Stolpner
+# Licensed under Apache 2.0 License https://www.apache.org/licenses/LICENSE-2.0
+
+#!/usr/bin/env python3
+
 import PySimpleGUI as sg
 from PMS import PMS
 import time
+
+# This class implements PMS dashboard using PySimpleGUI
 
 class Dashboard:
 
