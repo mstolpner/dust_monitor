@@ -1,3 +1,6 @@
+# Copyright 2022 Mikhail Stolpner
+# Licensed under Apache 2.0 License https://www.apache.org/licenses/LICENSE-2.0
+
 from Dashboard import Dashboard
 from PMS import PMS
 
