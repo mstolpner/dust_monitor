@@ -1,3 +1,6 @@
+# Copyright 2022 Mikhail Stolpner
+# Licensed under Apache 2.0 License https://www.apache.org/licenses/LICENSE-2.0
+
 #!/usr/bin/env python3
 
 import time
@@ -5,6 +8,8 @@ import datetime
 import random
 
 
+# This class encapsulates PMS functionality and AQI limits
+# Documentation on PMS sensor can be found here https://github.com/ZIOCC/Zio-Qwiic-PM2.5-Air-Quality-Sensor-Adapter-Board/blob/master/PMSA003%20series%20data%20manua_English_V2.6.pdf
 
 class PMS:
 
@@ -28,17 +33,19 @@ class PMS:
   CAN_PM25_24HR_ORANGE =                 27.0  
   #CAN_PM25_24HR_RED =                    
 
-
-  _port = None
-  _rstPin = None
-  _setPin = None  
-  _mode = "streaming" 
+  # PMS Configuratopm
+  _port = None          # Port
+  _rstPin = None        # Reset pin
+  _setPin = None        # Set pin
+  _mode = "streaming"   # Default mode is streaming
+  
+  # Operational variables
   _status = None
   _buffer = b''
   _simulate = False
   _gpio = None
 
-  # Data
+  # PMS Data
   apm10 = None
   apm25 = None
   apm100 = None
@@ -52,6 +59,7 @@ class PMS:
   gt50um = None
   gt100um = None
 
+  # Initialization code. When simulate is set to True, PMS sensor is not required. 
   def __init__(self, portname, rstPin, setPin, simulate = False):
     if simulate:
       self._simulate = simulate
@@ -76,23 +84,27 @@ class PMS:
     # Init port
     self._port = serial.Serial(portname, baudrate=9600, stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS, timeout=10)
 
+  # Release hardware
   def release(self):
     if self._simulate:
       return    
     self.sleep()
     self._gpio.cleanup()
 
+  # Set PMS sensor to sleep. Helpful to prolongue its life.
   def sleep(self):
     if self._simulate:
       return    
     self._port.write(b'\x42\x4D\xE4\x00\x00\x01\x73')
 
+  # Wake up sensor hardware
   def wakeup(self):
     if self._simulate:
       return    
     # Operating mode. Stable data should should start coming at least 30 seconds after the sensor wakeup from the sleep mode because of the fan's performance.
     self._port.write(b'\x42\x4D\xE4\x00\x01\x01\x74')
 
+  # Sets streaming mode. Refer to PMS documentatiom.
   def setStreamingMode(self):
     if self._simulate:
       return    
@@ -100,6 +112,7 @@ class PMS:
     self._port.write(b'\x42\x4D\xE1\x00\x01\x01\x71')
     self._mode = 'streaming'
 
+  # Sets On-Demand mode. Refer to PMS documentatiom.
   def setOnDemandMode(self):
     if self._simulate:
       return    
@@ -107,6 +120,7 @@ class PMS:
     self._port.write(b'\x42\x4D\xE1\x00\x00\x01\x70')
     self._mode = 'on-demand'
 
+  # Request new data. Refer to PMS documentatiom.
   def requestData(self):
     if self._simulate:
       return    
@@ -116,6 +130,7 @@ class PMS:
     else:
       raise Exception("PMS does not allows to request data on demand in Active/Streaming mode.")
 
+  # Receive PMS transmission in any mode
   def recievePmsTransmission(self, timeout=10000, debug=False):
     if self._simulate:
       # Produce random data
@@ -137,6 +152,7 @@ class PMS:
         self._printDebug()
       return True 
 
+    # Start timeout timer
     start_time = round(time.time()*1000)
     self._buffer = b''
 
